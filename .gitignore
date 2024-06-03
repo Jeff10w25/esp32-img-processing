@@ -1,9 +1,14 @@
 .pio
 .vscode/
+
+# Test and Libraries subfolder
 test/
 lib/
-=======
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
 *$py.class
+
+# cpp test file (for now)
+src/test.cpp

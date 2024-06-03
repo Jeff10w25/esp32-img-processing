@@ -32,9 +32,8 @@ static const char* _STREAM_PART = "Content-Type: image/jpeg\r\nContent-Length: %
 //#define CAMERA_MODEL_DFRobot_FireBeetle2_ESP32S3 // Has PSRAM
 //#define CAMERA_MODEL_DFRobot_Romeo_ESP32S3 // Has PSRAM
 
-// include camera_pins and index after selecting the model
+// include camera_pins after selecting the model
 #include "camera_pins.h"
-#include "camera_index.h"
 
 //Wifi Network credentials
 const char* ssid = "Nattakit_2G";  // REPLACE_WITH_YOUR_SSID
