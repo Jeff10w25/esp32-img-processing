@@ -1,7 +1,8 @@
 import cv2
+import numpy as np
 
 # Replace the URL with the IP camera's stream URL
-url = 'http://192.168.1.33/'
+url = "http://192.168.1.33/"
 
 win_name = "live Cam Testing"
 cv2.namedWindow(win_name, cv2.WINDOW_AUTOSIZE)
@@ -13,6 +14,7 @@ cap = cv2.VideoCapture(url)
 if not cap.isOpened(): 
     print("Failed to open the IP camera stream")
     exit()
+    
 
 # Face detection model prototxt and caffe
 model_proto = "model/deploy.prototxt"
@@ -26,14 +28,14 @@ mean = [104, 117, 123]
 conf_threshold = 0.7
 
 # Image processing modes
-PREVIEW = 0
-BLUR = 1
-CANNY = 2
-FACEDETECT = 3
+class modes:
+    PREVIEW = 0
+    BLUR = 1
+    CANNY = 2
+    FACEDETECT = 3
 
 alive = True
-image_filter = PREVIEW
-
+image_filter = modes.PREVIEW
 
 # Read and display video frames
 while alive:
@@ -44,16 +46,13 @@ while alive:
     frame_width = frame.shape[1]
 
     
-    if image_filter == PREVIEW:
+    if image_filter == modes.PREVIEW:
         result = frame
-        
-    elif image_filter == CANNY:
+    elif image_filter == modes.CANNY:
         result = cv2.Canny(frame, 70, 120)
-        
-    elif image_filter == BLUR:
+    elif image_filter == modes.BLUR:
         result = cv2.blur(frame, (13,13))
-        
-    elif image_filter == FACEDETECT:
+    elif image_filter == modes.FACEDETECT:
         result = frame
         # Create a 4D blob from a frame.
         blob = cv2.dnn.blobFromImage(result, 1.0, (in_width, in_height), mean, swapRB = False, crop = False)
@@ -68,36 +67,44 @@ while alive:
                 y_left_bottom = int(detections[0, 0, i, 4] * frame_height)
                 x_right_top = int(detections[0, 0, i, 5] * frame_width)
                 y_right_top = int(detections[0, 0, i, 6] * frame_height)
-
+                
+                middle_pt = [(x_left_bottom + x_right_top)/2, (y_left_bottom + y_right_top)/2]
+                middle_txt = "Middle point: %d, %d" % (middle_pt[0], middle_pt[1])
+                
+                # Green outline surrounding faces
                 cv2.rectangle(result, (x_left_bottom, y_left_bottom), (x_right_top, y_right_top), (0, 255, 0))
                 label = "Confidence: %.4f" % confidence
                 label_size, base_line = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, 0.5, 1)
 
+                # Confidence text box
                 cv2.rectangle(result, (x_left_bottom, y_left_bottom - label_size[1]),
                                     (x_left_bottom + label_size[0], y_left_bottom + base_line),
                                     (255, 255, 255), cv2.FILLED)
                 cv2.putText(result, label, (x_left_bottom, y_left_bottom),
                             cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0))
+                
+                # Middle position text box
+                cv2.rectangle(result, (0, 0), (200, 20), (255, 255, 255), cv2.FILLED)
+                cv2.putText(result, middle_txt, (0, 15), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0))
     try:            
         cv2.imshow(win_name, result)
     except Exception as err:
         print(err)
 
-    key = cv2.waitKey(1)
+    key = cv2.waitKey(1) & 0xFF # check for user's input on the keyboard
+    
     if key == 27:   # Esc
         alive = False
-        
     elif key == ord('c') or key == ord('C'):
-        image_filter = CANNY
-        
+        image_filter = modes.CANNY       
     elif key == ord('b') or key == ord('B'):
-        image_filter = BLUR
-        
+        image_filter = modes.BLUR       
     elif key == ord('p') or key == ord('P'):
-        image_filter = PREVIEW
-        
+        image_filter = modes.PREVIEW      
     elif key == ord('f') or key == ord('F'):
-        image_filter = FACEDETECT
-    
+        image_filter = modes.FACEDETECT
+
+# if __name__ == '__main__':  
+        
 cap.release()
 cv2.destroyAllWindows()
